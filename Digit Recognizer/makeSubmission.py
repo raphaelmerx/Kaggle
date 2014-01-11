@@ -15,7 +15,7 @@ def main():
 
     #multi-core CPUs can use: rf = RandomForestClassifier(n_estimators=100, n_jobs=2)
     # n_estimators is the number of trees in the forest, a parameter for the Random Forest Algorithm
-    rf = RandomForestClassifier(n_estimators=10)
+    rf = RandomForestClassifier(n_estimators=1000)
     # the following line trains the model
     rf.fit(train, target)
     # rf.predict(test) is a list of all digit predictions for the file test.csv
