@@ -1,6 +1,7 @@
 from sklearn.ensemble import RandomForestClassifier
 from numpy import genfromtxt, savetxt, array, mean
 import csv
+import re
 
 
 def fileToArray(filename, columnsToKeep):
@@ -23,12 +24,33 @@ def fileToArray(filename, columnsToKeep):
     return array(lines)
 
 # TODO: add column age
-dataset = fileToArray('Data/train.csv', columnsToKeep = ['Survived','Pclass','Sex','Age', 
-    'SibSp', 'Parch'])
-test = fileToArray('Data/test.csv',columnsToKeep = ['Pclass','Sex','Age','SibSp', 'Parch'])
-#create the training & test sets, skipping the header row with [1:]
+dataset = fileToArray('Data/train.csv', columnsToKeep = ['Survived','Pclass','Name', 'Sex','Age', 'SibSp', 'Parch'])
+test = fileToArray('Data/test.csv',columnsToKeep = ['Pclass','Name', 'Sex','Age','SibSp', 'Parch'])
 
-# function that takes an array ages, and fills missing values with the mean
+def extractTitle(name):
+    title = re.findall(r'[a-zA-Z]+\.', name)
+    return title[0]
+
+def replaceNameByTitle(array, namesColumnId):
+    names = array[:,namesColumnId]
+    for i in range(names.size):
+        names[i]=extractTitle(names[i])
+    return None
+
+def hashTitle(title):
+    return ord(title[0])+ord(title[1])+len(title)
+
+def replaceTitleByHash(array,titleColumnId):
+    titles = array[:,titleColumnId]
+    for i in range(titles.size):
+        titles[i]=hashTitle(titles[i])
+    return None
+
+replaceNameByTitle(dataset, 2)
+replaceTitleByHash(dataset,2)
+replaceNameByTitle(test, 1)
+replaceTitleByHash(test,1)
+
 def missingToMean(ages):
     listWithoutMissing = []
     for age in ages:
@@ -38,17 +60,16 @@ def missingToMean(ages):
     for i in range(ages.size):
         if ages[i]=='':
             ages[i] = agesMean
-    return ages
+    return None
 
-# filling the missing ages with the mean of the ages
-dataset[:,3] = missingToMean(dataset[:,3])
+missingToMean(dataset[:,4])
 dataset = dataset.astype(float).astype(int)
-test[:,2] = missingToMean(test[:,2])
+missingToMean(test[:,3])
 test = test.astype(float).astype(int)
 
 target = [int(x[0]) for x in dataset]
 train = [x[1:] for x in dataset]
-rf = RandomForestClassifier(n_estimators=10)
+rf = RandomForestClassifier(n_estimators=1000)
 rf.fit(train, target)
 prediction = [[index + 892, x] for index, x in enumerate(rf.predict(test))]
 
